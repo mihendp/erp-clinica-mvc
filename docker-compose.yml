@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres-vaadin
+    restart: always
+    environment:
+      POSTGRES_USER: vaadinstart
+      POSTGRES_PASSWORD: vaadinstart
+    ports:
+      - "5436:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - vaadin-net
+
+networks:
+  vaadin-net:
+    driver: bridge

@@ -1,0 +1,7 @@
+@import url('./main-layout.css');
+@import url('./views/login-view.css');
+@import url('./views/agendamentos-view.css');
+@import url('./views/medicos-view.css');
+@import url('./views/pacientes-view.css');
+@import url('./views/atendimentos-view.css');
+@import url('./views/usuarios-view.css');
