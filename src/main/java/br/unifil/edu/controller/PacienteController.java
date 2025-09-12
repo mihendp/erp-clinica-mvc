@@ -1,7 +1,7 @@
 package br.unifil.edu.controller;
 
 import br.unifil.edu.model.Paciente;
-import br.unifil.edu.services.PacienteService;
+import br.unifil.edu.repository.PacienteRepository;
 import br.unifil.edu.views.pacientes.PacientesView;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,18 +13,18 @@ import java.util.List;
 @Component
 @Scope("prototype")
 public class PacienteController {
-    private final PacienteService pacienteService;
+    private final PacienteRepository pacienteRepository;
     @Setter
     private PacientesView view;
 
     @Autowired
-    public PacienteController(PacienteService pacienteService) {
-        this.pacienteService = pacienteService;
+    public PacienteController(PacienteRepository pacienteRepository) {
+        this.pacienteRepository = pacienteRepository;
     }
 
     public void carregarPacientes() {
         try {
-            List<Paciente> pacientes = pacienteService.findAll();
+            List<Paciente> pacientes = pacienteRepository.findAll();
             view.atualizarGrid(pacientes);
         } catch (Exception e) {
             view.mostrarNotificacao("Erro ao carregar pacientes: " + e.getMessage());
@@ -33,7 +33,7 @@ public class PacienteController {
 
     public void salvarPaciente(Paciente paciente) {
         try {
-            pacienteService.save(paciente);
+            pacienteRepository.save(paciente);
             view.fecharFormulario();
             view.mostrarNotificacao("Paciente salvo com sucesso!");
             carregarPacientes(); // Recarrega a lista para mostrar o novo/atualizado paciente
@@ -44,7 +44,7 @@ public class PacienteController {
 
     public void deletarPaciente(Paciente paciente) {
         try {
-            pacienteService.delete(paciente);
+            pacienteRepository.delete(paciente);
             view.fecharFormulario();
             view.mostrarNotificacao("Paciente deletado com sucesso!");
             carregarPacientes(); // Recarrega a lista

@@ -1,5 +1,6 @@
 package br.unifil.edu.views.pacientes;
 
+import br.unifil.edu.model.Genero;
 import br.unifil.edu.model.Paciente;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -7,56 +8,90 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
-import lombok.Getter;
+import com.vaadin.flow.shared.Registration;
 
 public class PacienteForm extends Dialog {
 
-    TextField nome = new TextField("Nome");
-    TextField cpf = new TextField("CPF");
-    TextField telefone = new TextField("Telefone");
+    private final Binder<Paciente> binder = new BeanValidationBinder<>(Paciente.class);
+    private Paciente paciente;
 
-    Button saveButton = new Button("Salvar");
-    @Getter
-    Button deleteButton = new Button("Deletar");
-    Button cancelButton = new Button("Cancelar");
+    // Campos do formulário
+    private final TextField nome = new TextField("Nome");
+    private final TextField cpf = new TextField("CPF");
+    private final TextField telefone = new TextField("Telefone");
+    private final EmailField email = new EmailField("E-mail");
+    private final DatePicker dataNascimento = new DatePicker("Data de Nascimento");
+    private final ComboBox<Genero> genero = new ComboBox<>("Gênero");
 
-    Binder<Paciente> binder = new BeanValidationBinder<>(Paciente.class);
+    private final TextField endereco = new TextField("Endereço");
+    private final TextField cidade = new TextField("Cidade");
+    private final TextField estado = new TextField("Estado");
+    private final TextField cep = new TextField("CEP");
+
+    private final TextField nomeContatoEmergencia = new TextField("Nome Contato de Emergência");
+    private final TextField telefoneContatoEmergencia = new TextField("Telefone Contato de Emergência");
+
+
+    // Botões
+    private final Button saveButton = new Button("Salvar");
+    private final Button deleteButton = new Button("Deletar");
+    private final Button closeButton = new Button("Cancelar");
+
 
     public PacienteForm() {
         setHeaderTitle("Dados do Paciente");
-        binder.bindInstanceFields(this);
-
-        add(createFormLayout());
-        add(createButtonLayout());
+        configurarCampos();
+        configurarBinder();
+        add(createFormLayout(), createButtonLayout());
     }
 
-    public void setPaciente(Paciente paciente) {
-        binder.setBean(paciente);
+    private void configurarCampos() {
+        genero.setItems(Genero.values());
+        genero.setItemLabelGenerator(Genero::getDescricao);
+    }
+
+    private void configurarBinder() {
+        binder.bindInstanceFields(this);
     }
 
     private Component createFormLayout() {
-        return new FormLayout(nome, cpf, telefone);
+        FormLayout formLayout = new FormLayout();
+        formLayout.add(
+                nome, cpf, telefone, email, dataNascimento, genero,
+                endereco, cidade, estado, cep,
+                nomeContatoEmergencia, telefoneContatoEmergencia
+        );
+        formLayout.setResponsiveSteps(
+                new FormLayout.ResponsiveStep("0", 1),
+                new FormLayout.ResponsiveStep("500px", 2)
+        );
+        return formLayout;
     }
 
     private Component createButtonLayout() {
         saveButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         deleteButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
-        cancelButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
 
         saveButton.addClickShortcut(Key.ENTER);
-        cancelButton.addClickShortcut(Key.ESCAPE);
+        closeButton.addClickShortcut(Key.ESCAPE);
 
         saveButton.addClickListener(event -> validateAndSave());
-        deleteButton.addClickListener(event -> fireEvent(new DeleteEvent(this, binder.getBean())));
-        cancelButton.addClickListener(event -> fireEvent(new CloseEvent(this)));
+        deleteButton.addClickListener(event -> fireEvent(new DeleteEvent(this, paciente)));
+        closeButton.addClickListener(event -> fireEvent(new CloseEvent(this)));
 
-        return new HorizontalLayout(saveButton, deleteButton, cancelButton);
+        binder.addStatusChangeListener(e -> saveButton.setEnabled(binder.isValid()));
+
+        return new HorizontalLayout(saveButton, deleteButton, closeButton);
     }
 
     private void validateAndSave() {
@@ -65,13 +100,26 @@ public class PacienteForm extends Dialog {
         }
     }
 
-    // Sistema de Eventos para comunicar com a View principal
-    @Getter
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
+        binder.setBean(paciente);
+    }
+
+    public Button getDeleteButton() {
+        return deleteButton;
+    }
+
+    // Eventos
     public static abstract class PacienteFormEvent extends ComponentEvent<PacienteForm> {
         private final Paciente paciente;
+
         protected PacienteFormEvent(PacienteForm source, Paciente paciente) {
             super(source, false);
             this.paciente = paciente;
+        }
+
+        public Paciente getPaciente() {
+            return paciente;
         }
     }
 
@@ -93,13 +141,15 @@ public class PacienteForm extends Dialog {
         }
     }
 
-    public void addSaveListener(ComponentEventListener<SaveEvent> listener) {
-        addListener(SaveEvent.class, listener);
+    public Registration addSaveListener(ComponentEventListener<SaveEvent> listener) {
+        return addListener(SaveEvent.class, listener);
     }
-    public void addDeleteListener(ComponentEventListener<DeleteEvent> listener) {
-        addListener(DeleteEvent.class, listener);
+
+    public Registration addDeleteListener(ComponentEventListener<DeleteEvent> listener) {
+        return addListener(DeleteEvent.class, listener);
     }
-    public void addCloseListener(ComponentEventListener<CloseEvent> listener) {
-        addListener(CloseEvent.class, listener);
+
+    public Registration addCloseListener(ComponentEventListener<CloseEvent> listener) {
+        return addListener(CloseEvent.class, listener);
     }
 }

@@ -5,7 +5,6 @@ import br.unifil.edu.model.Paciente;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -18,13 +17,13 @@ import jakarta.annotation.security.PermitAll;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @PageTitle("Pacientes")
 @Route("pacientes")
 @Menu(order = 3, icon = LineAwesomeIconUrl.USERS_SOLID)
 @PermitAll
-@Uses(Icon.class)
 public class PacientesView extends Composite<VerticalLayout> {
     private final PacienteController controller;
     private final PacienteForm form;
@@ -34,7 +33,7 @@ public class PacientesView extends Composite<VerticalLayout> {
     @Autowired
     public PacientesView(PacienteController controller) {
         this.controller = controller;
-        this.controller.setView(this); // Conecta a View ao Controller
+        this.controller.setView(this);
 
         this.form = new PacienteForm();
 
@@ -42,7 +41,6 @@ public class PacientesView extends Composite<VerticalLayout> {
         configurarGrid();
         configurarListeners();
 
-        // Pede ao controller para carregar os dados iniciais
         this.controller.carregarPacientes();
     }
 
@@ -54,22 +52,25 @@ public class PacientesView extends Composite<VerticalLayout> {
 
     private void configurarGrid() {
         grid.setSizeFull();
-        grid.setColumns("id", "nome", "cpf", "telefone");
-        grid.getColumns().forEach(col -> col.setAutoWidth(true));
+        // Define colunas mais relevantes e formata a data
+        grid.setColumns("id", "nome", "cpf", "telefone", "email");
+        grid.addColumn(paciente -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            return paciente.getDataNascimento() != null ? paciente.getDataNascimento().format(formatter) : "";
+        }).setHeader("Data de Nascimento").setSortable(true);
 
-        // Adiciona uma coluna com o botão de editar
+        grid.getColumns().forEach(col -> col.setAutoWidth(true).setSortable(true));
+
         grid.addComponentColumn(paciente -> {
             Button editButton = new Button(new Icon(VaadinIcon.PENCIL));
+            editButton.addThemeVariants(ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_TERTIARY);
             editButton.addClickListener(e -> controller.onEditarClicked(paciente));
             return editButton;
         }).setHeader("Editar");
     }
 
     private void configurarListeners() {
-        // Ação do botão principal: delega ao controller
         adicionarPacienteButton.addClickListener(e -> controller.onAdicionarNovoClicked());
-
-        // Ações do formulário: delegam ao controller
         form.addSaveListener(event -> controller.salvarPaciente(event.getPaciente()));
         form.addDeleteListener(event -> controller.deletarPaciente(event.getPaciente()));
         form.addCloseListener(event -> fecharFormulario());
@@ -80,11 +81,8 @@ public class PacientesView extends Composite<VerticalLayout> {
     }
 
     public void abrirFormulario(Paciente paciente, boolean criandoNovo) {
-        form.getDeleteButton().setVisible(true);
+        form.getDeleteButton().setVisible(!criandoNovo);
         form.setPaciente(paciente);
-        if (criandoNovo) {
-            form.getDeleteButton().setVisible(false);
-        }
         form.open();
     }
 

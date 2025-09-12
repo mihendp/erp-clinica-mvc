@@ -1,16 +1,17 @@
 package br.unifil.edu.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Past;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.time.LocalDate;
 import java.util.Objects;
-
 
 @Entity
 @Getter
@@ -26,9 +27,27 @@ public class Paciente {
     private String nome;
 
     @NotBlank(message = "O CPF é obrigatório")
+    @Column(unique = true)
     private String cpf;
 
     private String telefone;
+
+    @Email(message = "E-mail inválido")
+    private String email;
+
+    @Past(message = "A data de nascimento deve estar no passado")
+    private LocalDate dataNascimento;
+
+    @Enumerated(EnumType.STRING)
+    private Genero genero;
+
+    private String endereco;
+    private String cidade;
+    private String estado;
+    private String cep;
+
+    private String nomeContatoEmergencia;
+    private String telefoneContatoEmergencia;
 
     @Override
     public final boolean equals(Object o) {
