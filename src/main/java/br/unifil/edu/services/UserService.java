@@ -1,44 +1,43 @@
 package br.unifil.edu.services;
 
-import br.unifil.edu.data.User;
-import br.unifil.edu.data.UserRepository;
-import java.util.Optional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import br.unifil.edu.model.User;
+import br.unifil.edu.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository repository;
-
-    public UserService(UserRepository repository) {
-        this.repository = repository;
-    }
+    private final UserRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public Optional<User> get(Long id) {
-        return repository.findById(id);
+        return usuarioRepository.findById(id);
     }
 
-    public User save(User entity) {
-        return repository.save(entity);
+    public User save(User user) {
+        // Verifica se uma nova senha foi fornecida para fazer o encode
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            user.setHashedPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        return usuarioRepository.save(user);
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        usuarioRepository.deleteById(id);
     }
 
-    public Page<User> list(Pageable pageable) {
-        return repository.findAll(pageable);
-    }
-
-    public Page<User> list(Pageable pageable, Specification<User> filter) {
-        return repository.findAll(filter, pageable);
+    public List<User> findAll() {
+        return usuarioRepository.findAll();
     }
 
     public int count() {
-        return (int) repository.count();
+        return (int) usuarioRepository.count();
     }
 
 }

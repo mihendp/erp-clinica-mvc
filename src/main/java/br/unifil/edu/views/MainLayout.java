@@ -1,6 +1,6 @@
 package br.unifil.edu.views;
 
-import br.unifil.edu.data.User;
+import br.unifil.edu.model.User;
 import br.unifil.edu.security.AuthenticatedUser;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -93,9 +93,11 @@ public class MainLayout extends AppLayout {
             User user = maybeUser.get();
 
             Avatar avatar = new Avatar(user.getName());
-            StreamResource resource = new StreamResource("profile-pic",
+            if (user.getProfilePicture() != null) {
+                StreamResource resource = new StreamResource("profile-pic",
                     () -> new ByteArrayInputStream(user.getProfilePicture()));
-            avatar.setImageResource(resource);
+                avatar.setImageResource(resource);
+            }
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 

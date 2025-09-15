@@ -1,7 +1,7 @@
 package br.unifil.edu.security;
 
-import br.unifil.edu.data.User;
-import br.unifil.edu.data.UserRepository;
+import br.unifil.edu.model.User;
+import br.unifil.edu.repository.UserRepository;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import java.util.Optional;
 import org.springframework.security.core.userdetails.UserDetails;

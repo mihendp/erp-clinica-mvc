@@ -1,6 +1,8 @@
-package br.unifil.edu.data;
+package br.unifil.edu.repository;
 
 import java.util.Optional;
+
+import br.unifil.edu.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
