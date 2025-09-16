@@ -27,6 +27,8 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+
+// Nessa tela só é listada os atendimentos do médicos que está logado no sistema.
 @PageTitle("Agendamentos")
 @Route(value = "") // Rota principal da aplicação
 @Menu(order = 1, icon = LineAwesomeIconUrl.CALENDAR)
