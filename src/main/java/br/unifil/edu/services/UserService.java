@@ -1,11 +1,13 @@
 package br.unifil.edu.services;
 
+import br.unifil.edu.model.Role;
 import br.unifil.edu.model.User;
 import br.unifil.edu.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +28,12 @@ public class UserService {
             user.setHashedPassword(passwordEncoder.encode(user.getPassword()));
         }
         return usuarioRepository.save(user);
+    }
+
+    public List<User> findAllDoctors() {
+        HashSet<Role> roles = new HashSet<>();
+        roles.add(Role.DOCTOR);
+        return usuarioRepository.findByRolesIn(roles);
     }
 
     public void delete(Long id) {

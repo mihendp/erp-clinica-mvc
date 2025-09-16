@@ -2,6 +2,9 @@ package br.unifil.edu.views.medicos;
 
 import br.unifil.edu.model.Especialidade;
 import br.unifil.edu.model.Medico;
+import br.unifil.edu.model.StatusAgendamento;
+import br.unifil.edu.model.User;
+import br.unifil.edu.services.UserService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -27,6 +30,7 @@ public class MedicosForm extends Dialog {
     private final TextField nome = new TextField("Nome");
     private final TextField crm = new TextField("CRM");
     private final ComboBox<Especialidade> especialidade = new ComboBox<>("Especialidade");
+    private final ComboBox<User> user = new ComboBox<>("Usuário");
     private final TextField telefone = new TextField("Telefone");
     private final EmailField email = new EmailField("E-mail");
 
@@ -35,7 +39,10 @@ public class MedicosForm extends Dialog {
     private final Button deleteButton = new Button("Deletar");
     private final Button closeButton = new Button("Cancelar");
 
-    public MedicosForm() {
+    private final UserService userService;
+
+    public MedicosForm(UserService userService) {
+        this.userService = userService;
         setHeaderTitle("Dados do Médico");
         configurarCampos();
         configurarBinder();
@@ -44,6 +51,8 @@ public class MedicosForm extends Dialog {
 
     private void configurarCampos() {
         especialidade.setItems(Especialidade.values());
+        user.setItems(userService.findAllDoctors());
+        user.setItemLabelGenerator(User::getName);
         especialidade.setItemLabelGenerator(Especialidade::getDescricao);
     }
 
@@ -53,7 +62,7 @@ public class MedicosForm extends Dialog {
 
     private Component createFormLayout() {
         FormLayout formLayout = new FormLayout();
-        formLayout.add(nome, crm, especialidade, telefone, email);
+        formLayout.add(nome, crm, especialidade, user, telefone, email);
         formLayout.setResponsiveSteps(
                 new FormLayout.ResponsiveStep("0", 1),
                 new FormLayout.ResponsiveStep("500px", 2)

@@ -1,8 +1,11 @@
+
 package br.unifil.edu.views.atendimentos;
 
-import br.unifil.edu.data.SamplePerson;
-import br.unifil.edu.services.SamplePersonService;
+import br.unifil.edu.controller.AtendimentoController;
+import br.unifil.edu.model.Agendamento;
+import br.unifil.edu.model.Atendimento;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
@@ -10,6 +13,8 @@ import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -17,83 +22,112 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
-import com.vaadin.flow.theme.lumo.LumoUtility.Gap;
-import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
 @PageTitle("Atendimentos")
 @Route("atendimentos")
 @Menu(order = 4, icon = LineAwesomeIconUrl.NOTES_MEDICAL_SOLID)
-@RolesAllowed("USER")
+@RolesAllowed({"DOCTOR", "ADMIN"})
 @Uses(Icon.class)
 public class AtendimentosView extends Composite<VerticalLayout> {
 
-    public AtendimentosView() {
-        VerticalLayout layoutColumn2 = new VerticalLayout();
-        H2 h2 = new H2();
-        Paragraph textSmall = new Paragraph();
-        HorizontalLayout layoutRow = new HorizontalLayout();
-        VerticalLayout layoutColumn3 = new VerticalLayout();
-        HorizontalLayout layoutRow2 = new HorizontalLayout();
-        TextField textField = new TextField();
-        Button buttonPrimary = new Button();
-        Grid basicGrid = new Grid(SamplePerson.class);
-        getContent().setWidth("100%");
-        getContent().getStyle().set("flex-grow", "1");
-        layoutColumn2.setWidthFull();
-        getContent().setFlexGrow(1.0, layoutColumn2);
-        layoutColumn2.addClassName(Gap.XSMALL);
-        layoutColumn2.addClassName(Padding.XSMALL);
-        layoutColumn2.setWidth("100%");
-        layoutColumn2.setHeight("90px");
-        h2.setText("Atendimentos");
-        h2.setWidth("max-content");
-        textSmall.setText("Gerencie as consultas de seus atendimentos");
-        textSmall.setWidth("100%");
-        textSmall.getStyle().set("font-size", "var(--lumo-font-size-xs)");
-        layoutRow.setWidthFull();
-        getContent().setFlexGrow(1.0, layoutRow);
-        layoutRow.addClassName(Gap.MEDIUM);
-        layoutRow.setWidth("100%");
-        layoutRow.getStyle().set("flex-grow", "1");
-        layoutColumn3.setHeightFull();
-        layoutRow.setFlexGrow(1.0, layoutColumn3);
-        layoutColumn3.setPadding(false);
-        layoutColumn3.setWidth("100%");
-        layoutColumn3.getStyle().set("flex-grow", "1");
-        layoutRow2.setWidthFull();
-        layoutColumn3.setFlexGrow(1.0, layoutRow2);
-        layoutRow2.addClassName(Gap.MEDIUM);
-        layoutRow2.setWidth("100%");
-        layoutRow2.getStyle().set("flex-grow", "1");
-        textField.setLabel("CPF do Paciente");
-        textField.setWidth("min-content");
-        textField.setHeight("57px");
-        buttonPrimary.setText("Pesquisar");
-        layoutRow2.setAlignSelf(FlexComponent.Alignment.END, buttonPrimary);
-        buttonPrimary.setWidth("min-content");
-        buttonPrimary.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        basicGrid.setWidth("100%");
-        basicGrid.getStyle().set("flex-grow", "0");
-        setGridSampleData(basicGrid);
-        getContent().add(layoutColumn2);
-        layoutColumn2.add(h2);
-        layoutColumn2.add(textSmall);
-        getContent().add(layoutRow);
-        layoutRow.add(layoutColumn3);
-        layoutColumn3.add(layoutRow2);
-        layoutRow2.add(textField);
-        layoutRow2.add(buttonPrimary);
-        layoutColumn3.add(basicGrid);
+    private final AtendimentoController controller;
+    private AtendimentoForm form;
+    private final TextField filtroCpf = new TextField("CPF do Paciente");
+    private final Grid<Agendamento> grid = new Grid<>(Agendamento.class);
+
+    @Autowired
+    public AtendimentosView(AtendimentoController controller) {
+        this.controller = controller;
+        this.controller.setView(this);
+        this.form = new AtendimentoForm();
+
+        configurarLayout();
+        configurarGrid();
+        configurarListeners();
+
+        this.controller.carregarAgendamentos(""); // Carga inicial
     }
 
-    private void setGridSampleData(Grid grid) {
-        grid.setItems(query -> samplePersonService.list(VaadinSpringDataHelpers.toSpringPageRequest(query)).stream());
+    private void configurarLayout() {
+        H2 h2 = new H2("Atendimentos");
+        Paragraph textSmall = new Paragraph("Gerencie as consultas de seus atendimentos");
+        VerticalLayout header = new VerticalLayout(h2, textSmall);
+        header.setPadding(false);
+        header.setSpacing(false);
+
+        Button pesquisarButton = new Button("Pesquisar");
+        pesquisarButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        HorizontalLayout toolbar = new HorizontalLayout(filtroCpf, pesquisarButton);
+        toolbar.setAlignItems(FlexComponent.Alignment.END);
+
+        getContent().add(header, toolbar, grid);
+        getContent().setSizeFull();
     }
 
-    @Autowired()
-    private SamplePersonService samplePersonService;
+    private void configurarGrid() {
+        grid.setSizeFull();
+        grid.setColumns(); // Limpa colunas
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        grid.addColumn(ag -> ag.getPaciente().getNome()).setHeader("Paciente").setSortable(true);
+        grid.addColumn(ag -> ag.getDataHora().format(formatter)).setHeader("Data Agendada").setSortable(true);
+        grid.addColumn(ag -> ag.getStatus().getDescricao()).setHeader("Status").setSortable(true);
+
+        grid.addComponentColumn(agendamento -> {
+            Button atenderButton = new Button("Realizar Atendimento", new Icon(VaadinIcon.STETHOSCOPE));
+            atenderButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_PRIMARY);
+            atenderButton.addClickListener(e -> controller.onAtenderClicked(agendamento));
+            // Desabilita o botão se a consulta já foi realizada
+            atenderButton.setEnabled(agendamento.getStatus() != br.unifil.edu.model.StatusAgendamento.REALIZADO);
+            return atenderButton;
+        }).setHeader("Ações");
+
+        grid.getColumns().forEach(col -> col.setAutoWidth(true));
+    }
+
+    private void configurarListeners() {
+        filtroCpf.addKeyPressListener(Key.ENTER, e -> pesquisar());
+        getContent().getChildren()
+                .filter(c -> c instanceof HorizontalLayout)
+                .findFirst()
+                .ifPresent(layout -> layout.getChildren()
+                        .filter(c -> c instanceof Button)
+                        .findFirst()
+                        .ifPresent(button -> ((Button) button).addClickListener(e -> pesquisar())));
+
+        form.addSaveListener(event -> controller.salvarAtendimento(event.getAtendimento()));
+        form.addCloseListener(event -> fecharFormulario());
+    }
+
+    private void pesquisar() {
+        controller.carregarAgendamentos(filtroCpf.getValue());
+    }
+
+    public void atualizarGrid(List<Agendamento> agendamentos) {
+        grid.setItems(agendamentos);
+    }
+
+    public void abrirFormulario(Atendimento atendimento) {
+        form.setAtendimento(atendimento);
+        form.open();
+    }
+
+    public void fecharFormulario() {
+        form.close();
+    }
+
+    public void limparFiltroEAtualizar() {
+        filtroCpf.clear();
+        pesquisar();
+    }
+
+    public void mostrarNotificacao(String mensagem) {
+        Notification.show(mensagem, 3000, Notification.Position.BOTTOM_CENTER);
+    }
 }

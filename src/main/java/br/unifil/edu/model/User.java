@@ -1,7 +1,5 @@
 package br.unifil.edu.model;
 
-import br.unifil.edu.data.AbstractEntity;
-import br.unifil.edu.data.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +12,11 @@ import java.util.Set;
 @Getter
 @Entity
 @Table(name = "application_user")
-public class User extends AbstractEntity {
+public class User {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @NotBlank(message = "O nome de usuário é obrigatório")
     @Column(unique = true)

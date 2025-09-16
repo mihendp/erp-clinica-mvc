@@ -2,6 +2,7 @@ package br.unifil.edu.views.medicos;
 
 import br.unifil.edu.controller.MedicoController;
 import br.unifil.edu.model.Medico;
+import br.unifil.edu.services.UserService;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -32,7 +33,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 @PageTitle("Medicos")
 @Route("medicos")
 @Menu(order = 2, icon = LineAwesomeIconUrl.STETHOSCOPE_SOLID)
-// @RolesAllowed("USER")
+ @RolesAllowed("ADMIN")
 @PermitAll
 public class MedicosView extends Composite<VerticalLayout> {
     private final MedicoController controller;
@@ -41,11 +42,11 @@ public class MedicosView extends Composite<VerticalLayout> {
     private final Button adicionarMedicoButton = new Button("Adicionar médico");
 
     @Autowired
-    public MedicosView(MedicoController controller) {
+    public MedicosView(MedicoController controller, UserService userService) {
         this.controller = controller;
         this.controller.setView(this);
 
-        this.form = new MedicosForm();
+        this.form = new MedicosForm(userService);
 
         configurarLayout();
         configurarGrid();

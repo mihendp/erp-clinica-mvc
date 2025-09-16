@@ -29,10 +29,6 @@ public class Medico {
     @NotBlank(message = "O nome é obrigatório")
     private String nome;
 
-    @NotBlank(message = "O CPF é obrigatório")
-    @Column(unique = true)
-    private String cpf;
-
     private String telefone;
 
     @Email(message = "E-mail inválido")
@@ -47,24 +43,11 @@ public class Medico {
     @Enumerated(EnumType.STRING)
     private Especialidade especialidade;
     private String crm;
-    private String endereco;
-    private String cidade;
-    private String estado;
-    private String cep;
 
-    
+    @OneToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
-
-    @Override
-    public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null) return false;
-        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
-        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
-        if (thisEffectiveClass != oEffectiveClass) return false;
-        Paciente paciente = (Paciente) o;
-        return getId() != null && Objects.equals(getId(), paciente.getId());
-    }
 
     @Override
     public final int hashCode() {

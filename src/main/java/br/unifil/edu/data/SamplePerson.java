@@ -1,5 +1,6 @@
 package br.unifil.edu.data;
 
+import br.unifil.edu.model.AbstractEntity;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.Email;
 import java.time.LocalDate;

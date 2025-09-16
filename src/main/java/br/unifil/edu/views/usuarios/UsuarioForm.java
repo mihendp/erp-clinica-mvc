@@ -1,6 +1,6 @@
 package br.unifil.edu.views.usuarios;
 
-import br.unifil.edu.data.Role;
+import br.unifil.edu.model.Role;
 import br.unifil.edu.model.User;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;

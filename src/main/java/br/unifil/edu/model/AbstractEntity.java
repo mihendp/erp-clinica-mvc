@@ -1,4 +1,4 @@
-package br.unifil.edu.data;
+package br.unifil.edu.model;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
